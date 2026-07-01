@@ -3,6 +3,22 @@ name: Create and init repo
 on:
   workflow_dispatch:
     inputs:
+      target_org:
+        description: "目标 GitHub 组织名"
+        required: false
+        default: "Business-Unit-for-Platform"
+      source_owner:
+        description: "源 GitHub owner/org"
+        required: false
+        default: "Business-Unit-for-Platform"
+      source_repo:
+        description: "源仓库名"
+        required: false
+        default: "ruoyi-vue-pro"
+      source_ref:
+        description: "源分支/标签"
+        required: false
+        default: "master-jdk17"
       repo_name:
         description: "要创建的新 GitHub 仓库名（例如: future-vue-pro）"
         required: true
@@ -19,10 +35,11 @@ on:
 jobs:
   create-and-init:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     env:
-      ORG: FutureTechQuant
+      ORG: ${{ github.event.inputs.target_org || 'Business-Unit-for-Platform' }}
+      SOURCE_OWNER: ${{ github.event.inputs.source_owner || 'Business-Unit-for-Platform' }}
+      SOURCE_REPO: ${{ github.event.inputs.source_repo || 'ruoyi-vue-pro' }}
+      SOURCE_REF: ${{ github.event.inputs.source_ref || 'master-jdk17' }}
       NEW_REPO: ${{ github.event.inputs.repo_name }}
       REPO_DESC: ${{ github.event.inputs.repo_description }}
       PRIVATE: ${{ github.event.inputs.private }}
@@ -70,8 +87,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          git clone -q -b master-jdk17 --depth=1 --single-branch \
-            https://github.com/FutureTechQuant/ruoyi-vue-pro.git source
+          git clone -q -b "${SOURCE_REF}" --depth=1 --single-branch \
+            "https://github.com/${SOURCE_OWNER}/${SOURCE_REPO}.git" source
 
           rm -rf source/.git source/.gitee source/.github source/.image \
                  source/Readme.md source/yudao-ui
