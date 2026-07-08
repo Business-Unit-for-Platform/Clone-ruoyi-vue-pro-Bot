@@ -17,6 +17,7 @@ ROOT = Path.cwd()
 DIRECT_REPLACEMENTS = [
     (re.compile(r"AKID[A-Za-z0-9]{13,}"), "TENCENT_CLOUD_SECRET_ID_PLACEHOLDER"),
     (re.compile(r"LTAI[A-Za-z0-9]{12,}"), "ALIBABA_CLOUD_ACCESS_KEY_ID_PLACEHOLDER"),
+    (re.compile(r"AKLT[A-Za-z0-9]{12,}"), "VOLCENGINE_ACCESS_KEY_ID_PLACEHOLDER"),
 ]
 
 # Secret values often sit in rows whose key/name/remark contains these words.
