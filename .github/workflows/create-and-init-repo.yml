@@ -43,6 +43,8 @@ jobs:
       NEW_REPO: ${{ github.event.inputs.repo_name }}
       REPO_DESC: ${{ github.event.inputs.repo_description }}
       PRIVATE: ${{ github.event.inputs.private }}
+      HAS_APP_ID: ${{ vars.APP_ID != '' }}
+      HAS_APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY != '' }}
 
     steps:
       - name: Checkout Clone-Bot
@@ -50,6 +52,8 @@ jobs:
 
       - name: Generate GitHub App installation token
         id: app-token
+        if: ${{ env.HAS_APP_ID == 'true' && env.HAS_APP_PRIVATE_KEY == 'true' }}
+        continue-on-error: true
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ vars.APP_ID }}
@@ -58,9 +62,24 @@ jobs:
 
       - name: Export APP_TOKEN
         shell: bash
+        env:
+          APP_INSTALLATION_TOKEN: ${{ steps.app-token.outputs.token }}
+          FALLBACK_PAT: ${{ secrets.GH_PAT || secrets.PERSONAL_ACCESS_TOKEN || secrets.PAT }}
         run: |
           set -euo pipefail
-          echo "APP_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+
+          if [ -n "${APP_INSTALLATION_TOKEN}" ]; then
+            echo "Using GitHub App installation token."
+            echo "APP_TOKEN=${APP_INSTALLATION_TOKEN}" >> "$GITHUB_ENV"
+          elif [ -n "${FALLBACK_PAT}" ]; then
+            echo "Using PAT fallback token from GH_PAT / PERSONAL_ACCESS_TOKEN / PAT."
+            echo "APP_TOKEN=${FALLBACK_PAT}" >> "$GITHUB_ENV"
+          else
+            echo "ERROR: No usable GitHub write token configured." >&2
+            echo "Configure either vars.APP_ID + secrets.APP_PRIVATE_KEY for the GitHub App," >&2
+            echo "or configure a PAT secret named GH_PAT, PERSONAL_ACCESS_TOKEN, or PAT." >&2
+            exit 1
+          fi
 
       - name: Install Python dependencies
         run: pip install -q -r tools/requirements.txt
