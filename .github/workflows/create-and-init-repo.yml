@@ -129,6 +129,7 @@ jobs:
           (cd repo_content && python3 ../tools/split_api_biz.py)
           (cd repo_content && python3 ../tools/uncomment_maven.py)
           (cd repo_content && python3 ../tools/patch_application_local.py)
+          (cd repo_content && python3 ../tools/sanitize_push_protection_secrets.py)
 
       - name: Create new GitHub repo (org)
         shell: bash
